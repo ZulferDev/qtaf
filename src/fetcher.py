@@ -38,6 +38,7 @@ async def fetch_all_data() -> list[dict]:
         if not symbol.endswith("_USDT"):
             continue
         pair = _to_ccxt_symbol(symbol)
+        pair = pair[:50] if len(pair) > 50 else pair
         results.append({
             "pair": pair,
             "price": t.get("lastPrice"),
