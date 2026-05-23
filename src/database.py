@@ -70,13 +70,10 @@ async def delete_old_market_data(days: int = 30) -> int:
     return len(resp.data or [])
 
 
-async def get_top_pairs(limit: int = 10) -> list[dict]:
+async def get_top_pairs(limit: int = 10, direction: str | None = None) -> list[dict]:
     sb = get_supabase()
-    resp = (
-        sb.table("top_arbitrage_pairs")
-        .select("*")
-        .order("total_score", desc=True)
-        .limit(limit)
-        .execute()
-    )
+    query = sb.table("top_arbitrage_pairs").select("*")
+    if direction:
+        query = query.eq("recommended_direction", direction.upper())
+    resp = query.order("total_score", desc=True).limit(limit).execute()
     return resp.data or []
