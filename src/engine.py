@@ -19,9 +19,9 @@ async def compute_scores(current_data: list[dict]) -> list[dict]:
         total = momentum + execution
         fr = row.get("funding_rate") or 0
         if fr > 0.0001:
-            direction = "LONG"
-        elif fr < -0.0001:
             direction = "SHORT"
+        elif fr < -0.0001:
+            direction = "LONG"
         else:
             direction = "NEUTRAL"
         top_rows.append({
