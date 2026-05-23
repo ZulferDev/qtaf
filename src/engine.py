@@ -17,7 +17,13 @@ async def compute_scores(current_data: list[dict]) -> list[dict]:
             momentum = _compute_momentum(row, hist_df)
         execution = _compute_execution(row, hist_df)
         total = momentum + execution
-        direction = "LONG" if total > 0 else ("SHORT" if total < 0 else "NEUTRAL")
+        fr = row.get("funding_rate") or 0
+        if fr > 0.0001:
+            direction = "LONG"
+        elif fr < -0.0001:
+            direction = "SHORT"
+        else:
+            direction = "NEUTRAL"
         top_rows.append({
             "pair": pair,
             "total_score": round(total, 4),
