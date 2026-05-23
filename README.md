@@ -30,27 +30,39 @@ Data Collection, Processing, and Delivery backend for Crypto Funding Rate Arbitr
 | Method | Path | Description |
 |--------|------|-------------|
 | `GET` | `/api/v1/top-pairs` | Returns top 10 arbitrage opportunities |
-| `POST` | `/api/v1/run-engine` | Trigger pipeline manually (requires `Authorization: Bearer <API_SECRET>`) |
 
-## Environment Variables
+## GitHub Secrets
 
-| Variable | Required | Description |
-|----------|----------|-------------|
-| `SUPABASE_URL` | ✅ | Supabase project URL |
-| `SUPABASE_KEY` | ✅ | Supabase anon or service_role key |
-| `API_SECRET` | ❌ | Secret token for /run-engine endpoint |
+- `SUPABASE_URL`
+- `SUPABASE_KEY`
 
 ## Cron via Webhook (cron-job.org)
 
-Disable GitHub Actions cron and use [cron-job.org](https://cron-job.org) for more reliable scheduling:
+Gantikan cron bawaan GitHub Actions (sering delay/skip) dengan [cron-job.org](https://cron-job.org) yang memicu workflow via GitHub API.
 
-1. Go to https://cron-job.org and create a free account
-2. Create a new cron job:
-   - **URL**: `https://Hdevpem-qtaf-api.hf.space/api/v1/run-engine`
+### 1. Buat GitHub Personal Access Token
+
+Buka https://github.com/settings/tokens → **Generate new token (classic)**:
+- Scope: `repo` (full control)
+- Copy tokennya, simpan
+
+### 2. Setup di cron-job.org
+
+1. Buka https://cron-job.org → Create account (free)
+2. **Create Cronjob**:
+   - **URL**: `https://api.github.com/repos/ZulferDev/qtaf/dispatches`
    - **Method**: `POST`
-   - **Headers**: `Authorization: Bearer <your_api_secret>`
+   - **Headers**:
+     ```
+     Authorization: Bearer <github_pat>
+     Accept: application/vnd.github+json
+     Content-Type: application/json
+     ```
+   - **Body**:
+     ```json
+     {"event_type": "run-engine"}
+     ```
    - **Interval**: Every 30 minutes
-   - **Time of day**: Any
-3. Save — it will hit your endpoint every 30 minutes
+3. Save
 
-cron-job.org is free, has 99.9% uptime, and will retry on failure.
+cron-job.org akan POST ke GitHub API → trigger `repository_dispatch` → jalankan workflow → pipeline full (fetch, score, upsert) di runner GitHub, bukan di HF Spaces.

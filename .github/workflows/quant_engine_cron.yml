@@ -1,9 +1,9 @@
 name: Quant Engine Cron
 
 on:
-  schedule:
-    - cron: '*/30 * * * *'
   workflow_dispatch:
+  repository_dispatch:
+    types: [run-engine]
 
 jobs:
   run-engine:

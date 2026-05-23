@@ -3,7 +3,6 @@ from typing import Optional
 
 SUPABASE_URL: Optional[str] = os.environ.get("SUPABASE_URL")
 SUPABASE_KEY: Optional[str] = os.environ.get("SUPABASE_KEY")
-API_SECRET: Optional[str] = os.environ.get("API_SECRET")
 
 DATA_RETENTION_DAYS: int = 30
 EXCHANGE: str = "mexc"
