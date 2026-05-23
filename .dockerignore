@@ -1,0 +1,8 @@
+.env
+.git
+.gitignore
+README.md
+project.md
+schema.sql
+__pycache__/
+*.pyc

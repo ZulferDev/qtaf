@@ -1,3 +1,12 @@
+---
+title: Crypto Funding Rate Arbitrage API
+emoji: 📈
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_port: 7860
+---
+
 # Crypto Funding Rate Arbitrage System
 
 Data Collection, Processing, and Delivery backend for Crypto Funding Rate Arbitrage.
