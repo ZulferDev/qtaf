@@ -26,6 +26,23 @@ async def insert_market_data(rows: list[dict]) -> None:
     sb.table("historical_market_data").insert(rows).execute()
 
 
+async def get_historical_data(
+    pair: str, hours: int = 24, limit: int = 100
+) -> list[dict]:
+    sb = get_supabase()
+    since = datetime.now(timezone.utc) - timedelta(hours=hours)
+    resp = (
+        sb.table("historical_market_data")
+        .select("*")
+        .eq("pair", pair)
+        .gte("timestamp", since.isoformat())
+        .order("timestamp", desc=True)
+        .limit(limit)
+        .execute()
+    )
+    return resp.data or []
+
+
 async def get_recent_market_data(
     pair: str, hours: int = 24
 ) -> pd.DataFrame:
