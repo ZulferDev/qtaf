@@ -4,12 +4,19 @@ from datetime import datetime, timezone
 from typing import Any
 import config
 import database as db
+from fetcher import fetch_spot_pairs
 
 
 async def compute_scores(current_data: list[dict]) -> list[dict]:
+    spot_bases = await fetch_spot_pairs()
     top_rows = []
     for row in current_data:
         pair = row["pair"]
+        base = pair.split("/")[0]
+        if "STOCK" in base.upper():
+            continue
+        if base not in spot_bases:
+            continue
         hist_df = await db.get_recent_market_data(pair, config.LOOKBACK_HOURS)
         if hist_df.empty:
             momentum = _compute_momentum_fallback(row)

@@ -23,6 +23,21 @@ def _from_ccxt_symbol(ccxt_sym: str) -> str:
     return ccxt_sym.replace("/", "_").replace(":USDT", "")
 
 
+SPOT_BASE_URL = "https://api.mexc.com/api/v3"
+
+
+async def fetch_spot_pairs() -> set[str]:
+    session = await _get_session()
+    async with session.get(f"{SPOT_BASE_URL}/exchangeInfo") as resp:
+        data = await resp.json()
+    symbols = data.get("symbols", [])
+    spot_bases = set()
+    for s in symbols:
+        if s.get("quoteAsset") == "USDT" and s.get("status") == "1":
+            spot_bases.add(s["baseAsset"])
+    return spot_bases
+
+
 async def fetch_all_data() -> list[dict]:
     session = await _get_session()
     async with session.get(f"{BASE_URL}/ticker") as resp:
