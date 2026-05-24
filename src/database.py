@@ -20,6 +20,8 @@ def get_supabase() -> Client:
 
 
 async def insert_market_data(rows: list[dict]) -> None:
+    if not rows:
+        return
     sb = get_supabase()
     sb.table("historical_market_data").insert(rows).execute()
 
@@ -41,26 +43,14 @@ async def get_recent_market_data(
 
 
 async def upsert_top_pairs(rows: list[dict]) -> None:
+    if not rows:
+        return
     sb = get_supabase()
     now = datetime.now(timezone.utc).isoformat()
-    pairs_incoming = {r["pair"] for r in rows}
-    existing = sb.table("top_arbitrage_pairs").select("pair").execute()
-    for row in existing.data or []:
-        if row["pair"] not in pairs_incoming:
-            sb.table("top_arbitrage_pairs").delete().eq("pair", row["pair"]).execute()
+    sb.table("top_arbitrage_pairs").delete().gte("id", 0).execute()
     for row in rows:
         row["updated_at"] = now
-        pair = row["pair"]
-        found = (
-            sb.table("top_arbitrage_pairs")
-            .select("id")
-            .eq("pair", pair)
-            .execute()
-        )
-        if found.data:
-            sb.table("top_arbitrage_pairs").update(row).eq("pair", pair).execute()
-        else:
-            sb.table("top_arbitrage_pairs").insert(row).execute()
+        sb.table("top_arbitrage_pairs").insert(row).execute()
 
 
 async def delete_old_market_data(days: int = 30) -> int:

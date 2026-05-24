@@ -65,15 +65,16 @@ def _compute_momentum(row: dict, hist: pd.DataFrame) -> float:
         if oi_pct > config.OI_SIGNIFICANT_PCT:
             score += 2.0
 
-    # Volume above 20-period MA
+    # Volume above MA
     if len(hist_sorted) >= config.VOLUME_MA_PERIOD:
         vol_ma = hist_sorted["volume"].tail(config.VOLUME_MA_PERIOD).mean()
         if current_vol > vol_ma:
             score += 1.0
 
-    # Price breaking key resistance/support (latest price above recent high)
-    recent_high = hist_sorted["price"].tail(20).max()
-    recent_low = hist_sorted["price"].tail(20).min()
+    # Price breaking key resistance/support
+    period = max(config.VOLUME_MA_PERIOD, 5)
+    recent_high = hist_sorted["price"].tail(period).max()
+    recent_low = hist_sorted["price"].tail(period).min()
     if current_price > recent_high:
         score += 1.0
     elif current_price < recent_low:

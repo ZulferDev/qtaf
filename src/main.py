@@ -7,21 +7,25 @@ from engine import run_quant_engine
 
 
 async def main() -> None:
-    data = await fetcher.fetch_all_data()
-    if not data:
-        print("No data fetched. Exiting.")
-        return
+    try:
+        data = await fetcher.fetch_all_data()
+        if not data:
+            print("No data fetched. Exiting.")
+            return
 
-    await db.insert_market_data(data)
-    print(f"Ingested {len(data)} rows into historical_market_data")
+        await db.delete_old_market_data(config.DATA_RETENTION_DAYS)
+        print(f"Cleaned rows older than {config.DATA_RETENTION_DAYS} days")
 
-    deleted = await db.delete_old_market_data(config.DATA_RETENTION_DAYS)
-    print(f"Cleaned {deleted} rows older than {config.DATA_RETENTION_DAYS} days")
+        await db.insert_market_data(data)
+        print(f"Ingested {len(data)} rows into historical_market_data")
 
-    top = await run_quant_engine(data)
-    print(f"Computed & upserted {len(top)} top arbitrage pairs")
-
-    await fetcher.close()
+        top = await run_quant_engine(data)
+        print(f"Computed & upserted {len(top)} top arbitrage pairs")
+    except Exception as e:
+        print(f"ERROR: {e}")
+        raise
+    finally:
+        await fetcher.close()
 
 
 if __name__ == "__main__":
