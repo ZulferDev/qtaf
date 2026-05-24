@@ -6,10 +6,9 @@ SUPABASE_KEY: Optional[str] = os.environ.get("SUPABASE_KEY")
 
 DATA_RETENTION_DAYS: int = 30
 EXCHANGE: str = "mexc"
-LOOKBACK_HOURS: int = 24
+LOOKBACK_HOURS: int = 72
 TOP_PAIRS_LIMIT: int = 10
-CRON_INTERVAL_MINUTES: int = 30
 
 FUNDING_RED_FLAG_THRESHOLD: float = 0.003  # 0.3% per 8h
-OI_SIGNIFICANT_PCT: float = 5.0           # 5% OI change threshold
-VOLUME_MA_PERIOD: int = 20
+OI_SIGNIFICANT_PCT: float = 5.0           # 5% OI change over 8h
+VOLUME_MA_PERIOD: int = 5

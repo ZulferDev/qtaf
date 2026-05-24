@@ -38,7 +38,7 @@ Data Collection, Processing, and Delivery backend for Crypto Funding Rate Arbitr
 
 ## Cron via Webhook (cron-job.org)
 
-Gantikan cron bawaan GitHub Actions (sering delay/skip) dengan [cron-job.org](https://cron-job.org) yang memicu workflow via GitHub API.
+Trigger GitHub Actions workflow via [cron-job.org](https://cron-job.org) setiap 8 jam (00:00, 08:00, 16:00 UTC).
 
 ### 1. Buat GitHub Personal Access Token
 
@@ -62,7 +62,8 @@ Buka https://github.com/settings/tokens → **Generate new token (classic)**:
      ```json
      {"event_type": "run-engine"}
      ```
-   - **Interval**: Every 30 minutes
+   - **Interval**: Every 8 hours
+   - **Time of day**: 00:00, 08:00, 16:00
 3. Save
 
-cron-job.org akan POST ke GitHub API → trigger `repository_dispatch` → jalankan workflow → pipeline full (fetch, score, upsert) di runner GitHub, bukan di HF Spaces.
+cron-job.org akan POST ke GitHub API → trigger `repository_dispatch` → jalankan workflow di runner GitHub.
