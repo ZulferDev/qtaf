@@ -49,17 +49,22 @@ def _compute_momentum(row: dict, hist: pd.DataFrame) -> float:
     current_vol = row.get("volume") or 0
     current_price = row.get("price") or 0
 
-    hist_sorted = hist.sort_values("timestamp")
-    if len(hist_sorted) < 2:
+    if hist.empty or len(hist) < 2:
         return 0.0
 
+    hist_sorted = hist.sort_values("timestamp")
+
     # Funding trend
-    prev_fr = hist_sorted["funding_rate"].iloc[-1] or 0
+    prev_fr = hist_sorted["funding_rate"].iloc[-1]
+    if pd.isna(prev_fr):
+        prev_fr = 0.0
     if current_fr > prev_fr:
         score += 2.0
 
     # OI increasing significantly
-    prev_oi = hist_sorted["open_interest"].iloc[-1] or 0
+    prev_oi = hist_sorted["open_interest"].iloc[-1]
+    if pd.isna(prev_oi):
+        prev_oi = 0.0
     if prev_oi > 0 and current_oi > 0:
         oi_pct = ((current_oi - prev_oi) / prev_oi) * 100
         if oi_pct > config.OI_SIGNIFICANT_PCT:
@@ -68,17 +73,18 @@ def _compute_momentum(row: dict, hist: pd.DataFrame) -> float:
     # Volume above MA
     if len(hist_sorted) >= config.VOLUME_MA_PERIOD:
         vol_ma = hist_sorted["volume"].tail(config.VOLUME_MA_PERIOD).mean()
-        if current_vol > vol_ma:
+        if pd.notna(vol_ma) and current_vol > vol_ma:
             score += 1.0
 
     # Price breaking key resistance/support
     period = max(config.VOLUME_MA_PERIOD, 5)
     recent_high = hist_sorted["price"].tail(period).max()
     recent_low = hist_sorted["price"].tail(period).min()
-    if current_price > recent_high:
-        score += 1.0
-    elif current_price < recent_low:
-        score -= 1.0
+    if pd.notna(recent_high) and pd.notna(recent_low):
+        if current_price > recent_high:
+            score += 1.0
+        elif current_price < recent_low:
+            score -= 1.0
 
     # Funding rate red flag
     if abs(current_fr) > config.FUNDING_RED_FLAG_THRESHOLD:
@@ -99,11 +105,9 @@ def _compute_execution(row: dict, hist: pd.DataFrame) -> float:
     fr = abs(row.get("funding_rate") or 0)
     vol = row.get("volume") or 0
     price = row.get("price") or 0
-    oi = row.get("open_interest") or 0
 
-    # Yield spread (funding rate minus estimated fees ~0.04%)
-    estimated_fee = 0.0004
-    yield_score = min((fr - estimated_fee) * 100 * 10, 5.0)
+    # Yield spread (funding rate minus estimated round-trip fees)
+    yield_score = min((fr - config.MAKER_FEE_RATE * 2) * 100 * 10, 5.0)
     yield_score = max(yield_score, 1.0)
 
     # Liquidity score based on volume + OI depth proxy

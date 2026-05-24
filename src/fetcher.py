@@ -19,10 +19,6 @@ def _to_ccxt_symbol(contract_symbol: str) -> str:
     return contract_symbol.replace("_", "/") + ":USDT"
 
 
-def _from_ccxt_symbol(ccxt_sym: str) -> str:
-    return ccxt_sym.replace("/", "_").replace(":USDT", "")
-
-
 SPOT_BASE_URL = "https://api.mexc.com/api/v3"
 
 

@@ -8,7 +8,8 @@ CREATE TABLE IF NOT EXISTS historical_market_data (
     funding_rate DOUBLE PRECISION,
     open_interest DOUBLE PRECISION,
     volume DOUBLE PRECISION,
-    price DOUBLE PRECISION
+    price DOUBLE PRECISION,
+    UNIQUE (pair, timestamp)
 );
 
 CREATE INDEX idx_hmd_pair_timestamp ON historical_market_data (pair, timestamp DESC);

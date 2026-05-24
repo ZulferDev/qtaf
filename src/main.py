@@ -16,10 +16,11 @@ async def main() -> None:
         await db.delete_old_market_data(config.DATA_RETENTION_DAYS)
         print(f"Cleaned rows older than {config.DATA_RETENTION_DAYS} days")
 
+        top = await run_quant_engine(data)
+        print(f"Computed & upserted {len(top)} top arbitrage pairs")
+
         await db.insert_market_data(data)
         print(f"Ingested {len(data)} rows into historical_market_data")
-
-        top = await run_quant_engine(data)
         print(f"Computed & upserted {len(top)} top arbitrage pairs")
     except Exception as e:
         print(f"ERROR: {e}")
